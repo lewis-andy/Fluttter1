@@ -1,6 +1,6 @@
-// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/dashboard_screen.dart';
+import '../database/database_helper.dart'; // Import your DatabaseHelper class
+import 'dashboard_screen.dart'; // Import the DashboardScreen
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,13 +11,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login() {
-    // Replace this with actual login logic
-    // Assuming login is successful
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => DashboardScreen()),
-    );
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
+  void _login() async {
+    final username = _usernameController.text;
+    final password = _passwordController.text;
+
+    final user = await _dbHelper.loginUser(username, password);
+
+    if (user != null) {
+      // Login successful
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login successful!')));
+      // Navigate to DashboardScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(username: username),
+        ),
+      );
+    } else {
+      // Login failed
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid username or password.')));
+    }
   }
 
   @override
@@ -25,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Login')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
