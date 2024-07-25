@@ -38,6 +38,15 @@ class DatabaseHelper {
         password TEXT NOT NULL
       )
     ''');
+    await db.execute('''
+      CREATE TABLE tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        title TEXT NOT NULL,
+        description TEXT,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    ''');
   }
 
   String _hashPassword(String password) {
@@ -74,5 +83,19 @@ class DatabaseHelper {
     } else {
       return null; // Invalid credentials
     }
+  }
+
+  Future<int> addTask(int userId, String title, String description) async {
+    final db = await database;
+    return await db.insert('tasks', {
+      'user_id': userId,
+      'title': title,
+      'description': description,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getTasks(int userId) async {
+    final db = await database;
+    return await db.query('tasks', where: 'user_id = ?', whereArgs: [userId]);
   }
 }
